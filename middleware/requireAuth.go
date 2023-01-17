@@ -13,7 +13,6 @@ import (
 )
 
 func RequireAuth(c *gin.Context) {
-	fmt.Println("IN middleware")
 	tokenString, err := c.Cookie("Authorization")
 	if err!= nil{
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -40,9 +39,7 @@ func RequireAuth(c *gin.Context) {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 		c.Set("user",user)
-
-
-		fmt.Println(claims["foo"], claims["nbf"])
+		
 	} else {
 		c.AbortWithStatus(http.StatusUnauthorized)
 	}
