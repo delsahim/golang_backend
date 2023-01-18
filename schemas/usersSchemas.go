@@ -7,6 +7,8 @@ var SignupBody struct {
 	FirstName string
 	LastName string 
 	DOB string
+	IsAdmin string
+	Role string
 }
 
 var LoginBody struct {

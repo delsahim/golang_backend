@@ -12,5 +12,6 @@ type UserModel struct {
 	FirstName string
 	LastName string
 	DOB datatypes.Date
-	
+	IsAdmin bool
+	Role string
 }

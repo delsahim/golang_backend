@@ -1,12 +1,13 @@
 package controllers
 
 import (
-	"fmt"
 	"golang_backend/initializers"
 	"golang_backend/models"
 	"golang_backend/schemas"
+	"golang_backend/validators"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,7 @@ import (
 )
 
 func UserCreate(c * gin.Context) {
-	fmt.Println("initial stop")
+	roles := []string {0:"Doctor",1:"Patient",3:"TechStaff"}
 	if c.Bind(&schemas.SignupBody) !=nil {
 		c.JSON(http.StatusBadRequest,gin.H{
 			"error": "Failed to read request body",
@@ -31,7 +32,23 @@ func UserCreate(c * gin.Context) {
 		})
 		return		
 	}
-	fmt.Println("encryption starts")
+
+	if !validators.OptionValidator(roles,schemas.SignupBody.Role) {
+		c.JSON(http.StatusBadRequest,gin.H{
+			"error": "wrong value for role format",
+		})
+		return	
+	}
+
+	isAdminBool,err := strconv.ParseBool(schemas.SignupBody.IsAdmin)
+	if err != nil {
+		c.JSON(http.StatusBadRequest,gin.H{
+			"error": "Wrong value for isadmin",
+		})
+		return		
+	}
+	
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(schemas.SignupBody.Password),10)
 	if err != nil {
 		c.JSON(http.StatusBadRequest,gin.H{
@@ -39,15 +56,15 @@ func UserCreate(c * gin.Context) {
 		})
 		return		
 	}
-	fmt.Println("encryption stop")
 	user := models.UserModel{
 		Email: schemas.SignupBody.Email,
 		Password: string(hash),
 		FirstName: schemas.SignupBody.FirstName,
 		LastName: schemas.SignupBody.LastName,
 		DOB: datatypes.Date(newDOB) ,
+		IsAdmin: isAdminBool,
+		Role: schemas.SignupBody.Role,
 	}
-	fmt.Println("second point")
 	result:= initializers.DB.Create(&user)
 	if result.Error!=nil {
 		c.JSON(http.StatusBadRequest,gin.H{
@@ -101,6 +118,5 @@ func UserLogin(c *gin.Context) {
 	c.SetSameSite(http.SameSiteDefaultMode)
 	c.SetCookie("Authorization",tokenString,3600*24*30,"","",false,true)
 	c.JSON(http.StatusOK,gin.H{})
-
-
 }
+
